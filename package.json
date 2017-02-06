@@ -1,0 +1,28 @@
+{
+  "name": "koa-mongo-sanitize",
+  "version": "0.1.0",
+  "description": "Sanitize koa payload for mongodb, works with koa-{body, bodyparser, ...}",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wacky6/koa-mongo-sanitize.git"
+  },
+  "keywords": [
+    "mongodb",
+    "koa",
+    "sanitize"
+  ],
+  "author": "wacky6",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wacky6/koa-mongo-sanitize/issues"
+  },
+  "homepage": "https://github.com/wacky6/koa-mongo-sanitize#readme",
+  "devDependencies": {
+    "co": "^4.6.0",
+    "tape": "^4.6.3"
+  }
+}
