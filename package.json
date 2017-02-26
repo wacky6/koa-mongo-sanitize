@@ -1,6 +1,6 @@
 {
   "name": "koa-mongo-sanitize",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Sanitize koa payload for mongodb, works with koa-{body, bodyparser, ...}",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/wacky6/koa-mongo-sanitize#readme",
   "devDependencies": {
-    "co": "^4.6.0",
     "tape": "^4.6.3"
   }
 }

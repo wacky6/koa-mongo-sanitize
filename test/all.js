@@ -1,5 +1,4 @@
 const { test } = require('tape')
-const co = require('co')
 const MongoSanitize = require('../')
 
 // Simplified Koa ctx for middleware
@@ -7,6 +6,10 @@ const DEFAULT_STATUS = 404
 const DEFAULT_MESSAGE = 'Not Found'
 const Ctx = (body) => {
     return {
+        is(type) {
+            // stub for is('multipart')
+            return false
+        },
         request: {
             body: body
         },
@@ -21,13 +24,13 @@ const EXPECT_REJECTED_STATUS = 400
 const EXPECT_REJECTED_BODY = 'Bad Request'
 
 // Executor
-const Exec = (m, body, next) => {
+const Exec = async (m, body, next) => {
     let ctx = Ctx(body)
-    let yields = m.call( ctx, next ).next().value
-    return { ctx, next: yields }
+    await m(ctx, next)
+    return ctx
 }
 
-test('safe payload', ({
+test('safe payload', async ({
     end,
     equal,
     ok,
@@ -35,17 +38,15 @@ test('safe payload', ({
 }) => {
     let m = MongoSanitize()
     let {
-        next,
-        ctx: { response: { status, body } }
-    } = Exec(m, { key: '$value$$$$', obj: { ca$h: 'this is safe' } }, ok)
+        response: { status, body }
+    } = await Exec(m, { key: '$value$$$$', obj: { ca$h: 'this is safe' } }, () => ok('await next()'))
 
-    equal( next, ok, 'yields next middleware' )
     equal( status, DEFAULT_STATUS, 'does not alter status' )
     equal( body, DEFAULT_MESSAGE, 'does not alter resp.body' )
     end()
 })
 
-test('unsafe payload, inject at root', ({
+test('unsafe payload, inject at root', async ({
     end,
     equal,
     ok,
@@ -53,17 +54,15 @@ test('unsafe payload, inject at root', ({
 }) => {
     let m = MongoSanitize()
     let {
-        next,
-        ctx: { response: { status, body } }
-    } = Exec(m, { $where: 'dangerous server-side js' }, ok)
+        response: { status, body }
+    } = await Exec(m, { $where: 'dangerous server-side js' }, () => fail('should not await next()'))
 
-    equal( next, undefined, 'does not yield next middleware' )
     equal( status, EXPECT_REJECTED_STATUS, 'sets status' )
     equal( body, EXPECT_REJECTED_BODY, 'sets resp.body' )
     end()
 })
 
-test('unsafe payload, inject in nested object', ({
+test('unsafe payload, inject in nested object', async ({
     end,
     equal,
     ok,
@@ -71,11 +70,9 @@ test('unsafe payload, inject in nested object', ({
 }) => {
     let m = MongoSanitize()
     let {
-        next,
-        ctx: { response: { status, body } }
-    } = Exec(m, { obj: { $where: 'dangerous server-side js' } }, ok)
+        response: { status, body }
+    } = await Exec(m, { obj: { $where: 'dangerous server-side js' } }, () => fail('should not await next()'))
 
-    equal( next, undefined, 'does not yield next middleware' )
     equal( status, EXPECT_REJECTED_STATUS, 'sets status' )
     equal( body, EXPECT_REJECTED_BODY, 'sets resp.body' )
     end()

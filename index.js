@@ -20,12 +20,13 @@ module.exports = function CreateKoaMongoSanitize({
         body = 'Bad Request'
     } = {}
 } = {}) {
-    return function* KoaSanitize(next) {
-        if ( deepSomeEntryIs( this.request.body, isInjection ) ) {
-            this.response.status = code
-            this.response.body = body
+    return async function KoaSanitize(ctx, next) {
+        let payload = ctx.is('multipart') ? ctx.request.body.fields : ctx.request.body
+        if ( deepSomeEntryIs( payload, isInjection ) ) {
+            ctx.response.status = code
+            ctx.response.body = body
         } else {
-            yield next
+            await next()
         }
     }
 }
